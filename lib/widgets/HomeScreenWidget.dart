@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class Homescreenwidget extends StatefulWidget{
+class Homescreenwidget extends StatefulWidget {
   const Homescreenwidget({super.key});
 
   @override
@@ -9,40 +9,38 @@ class Homescreenwidget extends StatefulWidget{
   }
 }
 
-
 class _HomeScreenWidgetState extends State<Homescreenwidget> {
+  bool hasExpenseData = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(0.2),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildDetailsCard()
-          ],
-        ),
-      ),
+      child: hasExpenseData ? _buildExpenseSummary() : _buildNoExpenseSummary(),
     );
   }
 
-  Widget _buildDetailsCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.amber
-      ),
-      padding: EdgeInsets.all(10),
-      height: 100,
-      width: double.infinity,
+  _buildExpenseSummary() {}
+
+  _buildNoExpenseSummary() {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Text("Hello Worlds")
-            ],
-          )
+          Text(
+            "No Expense Found!",
+            style: TextStyle(
+              fontSize: 24,
+            ),
+          ),
+          SizedBox(),
+          Text(
+            "Please add some expense.",
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
         ],
       ),
     );
   }
-  
 }
