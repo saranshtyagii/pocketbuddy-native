@@ -14,13 +14,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Pocket Buddy",
-        ),
-        backgroundColor: const Color.fromARGB(255, 84, 205, 193),
-      ),
+          title: const Text(
+        "Pocket Buddy",
+      )),
       body: Homescreenwidget(),
-      endDrawer: Drawer(),
+      drawer: Drawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddExpenseDialog,
         child: const Icon(Icons.add),
@@ -37,6 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class AddExpenseDialog extends StatefulWidget {
+  const AddExpenseDialog({super.key});
+
   @override
   _AddExpenseDialogState createState() => _AddExpenseDialogState();
 }
