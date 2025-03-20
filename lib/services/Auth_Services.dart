@@ -2,17 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 import 'package:procketbuddy_native/constants/Url_Constants.dart';
 import 'package:procketbuddy_native/main.dart';
 import 'package:procketbuddy_native/screens/Error_Screen.dart';
-import 'package:procketbuddy_native/screens/Home_Screen.dart';
+import 'package:procketbuddy_native/screens/Login_Screen.dart';
 import 'package:procketbuddy_native/utils/User_Authentication.dart';
 import 'package:procketbuddy_native/utils/User_Register.dart';
+import 'package:procketbuddy_native/utils/user_deatils.dart';
 
 class AuthServices {
-  final LocalStorage storage = new LocalStorage('pocket_buddy@_app');
-
   Future<http.Response?> createUserAccount(UserRegister userData) async {
     try {
       Uri uri = Uri.parse("${UrlConstants.backendUrlV1}/auth/register");
@@ -70,5 +68,21 @@ class AuthServices {
         builder: (context) => ErrorScreen(),
       ),
     );
+  }
+
+  static Future<String?> fetchAuthToken() async {
+    await storage.ready;
+    String? token = storage.getItem("user_auth_token");
+    if (token != null && token.isNotEmpty) {
+      return token.toString();
+    } else {
+      storage.deleteItem("user_auth_token");
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(),
+        ),
+      );
+    }
+    return null;
   }
 }

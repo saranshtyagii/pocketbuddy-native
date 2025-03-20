@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _hideLoginPassword = true;
   bool _hideSignUpPassword = true;
   bool _isLoginScreen = true;
+  bool _showLoading = false;
 
   final authService = AuthServices();
 
@@ -158,10 +159,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        child: Text(
-                          "Login",
-                          style: TextStyle(letterSpacing: 2, fontSize: 16),
-                        ),
+                        child: !_showLoading
+                            ? Text(
+                                "Login",
+                                style:
+                                    TextStyle(letterSpacing: 2, fontSize: 16),
+                              )
+                            : SizedBox(
+                                height: 26,
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
+                              ),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -375,7 +384,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   doLogin() async {
-    _loginFormKey.currentState!.validate();
+    if (!_loginFormKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _showLoading = !_showLoading;
+    });
 
     String usernameOrEmail = _usernameOrEmailController.text;
     String password = _passwordController.text;
@@ -390,6 +405,9 @@ class _LoginScreenState extends State<LoginScreen> {
       "",
     );
     final http.Response? respone = await authService.authenticateUser(userData);
+    setState(() {
+      _showLoading = !_showLoading;
+    });
     if (respone?.statusCode == 200) {
       setState(() {
         Navigator.of(context).pushReplacement(
