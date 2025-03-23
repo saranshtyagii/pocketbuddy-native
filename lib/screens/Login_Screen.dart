@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:procketbuddy_native/screens/Error_Screen.dart';
 import 'package:procketbuddy_native/screens/Home_Screen.dart';
 import 'package:procketbuddy_native/services/Auth_Services.dart';
 import 'package:http/http.dart' as http;
@@ -169,7 +170,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     TextStyle(letterSpacing: 2, fontSize: 16),
                               )
                             : SizedBox(
-                                height: 26,
+                                height: 24,
+                                width: 24,
                                 child: CircularProgressIndicator(
                                   color: Theme.of(context).colorScheme.surface,
                                 ),
@@ -349,7 +351,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        child: Text("Create Account"),
+                        child: !_showLoading
+                            ? Text("Create Account")
+                            : SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
+                              ),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -489,13 +499,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _showLoading = !_showLoading;
     });
     if (respone?.statusCode == 200) {
-      setState(() {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(),
-          ),
-        );
-      });
+      _switchToHome();
     } else {
       showDialog(
         context: context,
@@ -546,8 +550,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void doSignUp() {
+  void doSignUp() async {
     _registerFormKey.currentState?.validate();
+
+    setState(() {
+      _showLoading = !_showLoading;
+    });
 
     String fullName = _fullNameController.text.trim();
     List<String> nameParts = fullName.split(" ");
@@ -566,10 +574,32 @@ class _LoginScreenState extends State<LoginScreen> {
       mobileNumber: _mobileNumberController.text.trim(),
       password: password,
     );
-    authService.createUserAccount(userData);
+    http.Response? response = await authService.createUserAccount(userData);
+    if (response?.statusCode == 200) {
+      _switchToHome();
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ErrorScreen(),
+        ),
+      );
+    }
+    setState(() {
+      _showLoading = !_showLoading;
+    });
   }
 
   _doPasswordReset() {
     authService.resetPassword();
+  }
+
+  _switchToHome() {
+    setState(() {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+    });
   }
 }

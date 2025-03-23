@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:procketbuddy_native/constants/Url_Constants.dart';
 import 'package:procketbuddy_native/main.dart';
 import 'package:procketbuddy_native/screens/Error_Screen.dart';
+import 'package:procketbuddy_native/screens/Home_Screen.dart';
 import 'package:procketbuddy_native/screens/Login_Screen.dart';
 import 'package:procketbuddy_native/utils/User_Authentication.dart';
 import 'package:procketbuddy_native/utils/User_Register.dart';
@@ -22,7 +23,7 @@ class AuthServices {
         body: UserRegister.convertToJson(userData),
       );
       if (response.statusCode == 200) {
-        authenticateUser(
+        http.Response? loginResponse = await authenticateUser(
           UserAuthentication(
             usernameOrEmail: userData.email,
             password: userData.password,
@@ -34,6 +35,7 @@ class AuthServices {
             "",
           ),
         );
+        return loginResponse;
       }
     } catch (error) {
       _showErrorScreen();
