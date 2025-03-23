@@ -36,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _hideSignUpPassword = true;
   bool _isLoginScreen = true;
   bool _showLoading = false;
+  bool _showResetPasswordLoading = false;
 
   final authService = AuthServices();
 
@@ -134,7 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            _buildForgotPassword();
+                          },
                           child: Text(
                             "forgot password?",
                             style: TextStyle(
@@ -383,6 +386,83 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  _buildForgotPassword() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: double.infinity,
+              width: double.infinity,
+              padding: EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Reset your Password",
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ),
+                    SizedBox(height: 36),
+                    TextFormField(
+                      controller: _usernameOrEmailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Enter your email',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    SizedBox(
+                      width: 240,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _showResetPasswordLoading = true;
+                          });
+                          _doPasswordReset();
+                        },
+                        style: ButtonStyle(
+                          padding: MaterialStateProperty.all(
+                            EdgeInsets.all(18),
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        child: !_showResetPasswordLoading
+                            ? Text("Reset Password")
+                            : SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   doLogin() async {
     if (!_loginFormKey.currentState!.validate()) {
       return;
@@ -416,6 +496,53 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       });
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            content: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("The email or password you entered is incorrect."),
+                  SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ButtonStyle(
+                        padding: MaterialStateProperty.all(
+                          EdgeInsets.all(12),
+                        ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.onSecondaryFixed,
+                        ),
+                      ),
+                      child: Text(
+                        "Okay",
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      );
     }
   }
 
@@ -440,5 +567,9 @@ class _LoginScreenState extends State<LoginScreen> {
       password: password,
     );
     authService.createUserAccount(userData);
+  }
+
+  _doPasswordReset() {
+    authService.resetPassword();
   }
 }

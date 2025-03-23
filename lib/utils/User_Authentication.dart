@@ -30,4 +30,8 @@ class UserAuthentication {
   static String convertToJson(UserAuthentication userData) {
     return jsonEncode(userData.toJson());
   }
+
+  getUsernameOrEmail() {
+    return usernameOrEmail;
+  }
 }

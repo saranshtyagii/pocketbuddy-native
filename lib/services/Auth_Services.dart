@@ -54,6 +54,9 @@ class AuthServices {
       if (response.statusCode == 200) {
         Map<String, dynamic> userLoginData = jsonDecode(response.body);
         storage.setItem("user_auth_token", userLoginData["token"]);
+        fetchLoginUserInfo(userData.getUsernameOrEmail());
+        return response;
+      } else {
         return response;
       }
     } catch (error) {
@@ -62,15 +65,32 @@ class AuthServices {
     return null;
   }
 
-  _showErrorScreen() {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) => ErrorScreen(),
-      ),
-    );
+  void resetPassword() {}
+
+  void fetchLoginUserInfo(String emailOrUsername) async {
+    try {
+      Uri uri = Uri.parse(
+          "${UrlConstants.backendUrlV1}/user/find?usernameOrEmail=$emailOrUsername");
+
+      String token = await fetchAuthToken();
+      http.Response response = await http.get(
+        uri,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+        final Map<String, String> userData = jsonDecode(response.body);
+        UserDetails.saveUserDetails(userData);
+      } else {
+        _showErrorScreen();
+      }
+    } catch (error) {
+      _showErrorScreen();
+    }
   }
 
-  static Future<String?> fetchAuthToken() async {
+  static Future<String> fetchAuthToken() async {
     await storage.ready;
     String? token = storage.getItem("user_auth_token");
     if (token != null && token.isNotEmpty) {
@@ -83,6 +103,14 @@ class AuthServices {
         ),
       );
     }
-    return null;
+    return "";
+  }
+
+  _showErrorScreen() {
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (context) => ErrorScreen(),
+      ),
+    );
   }
 }
