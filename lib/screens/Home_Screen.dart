@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:procketbuddy_native/services/HomePageServices.dart';
-import 'package:procketbuddy_native/widgets/HomeScreenWidget.dart';
+import 'package:procketbuddy_native/widgets/personal_expense_widget.dart';
+import 'package:http/http.dart' as http;
+import 'package:procketbuddy_native/widgets/room_details_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,96 +12,113 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final Homepageservices homepageservices = Homepageservices();
+
+  bool hasExpenseData = false;
+  dynamic expenseData;
+  bool isLoading = true;
+  bool isPersonalExpenseScreen = true;
+  int selectedNavIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPersonalExpenseData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text(
-        "Pocket Buddy",
-      )),
-      body: Homescreenwidget(),
-      drawer: Drawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddExpenseDialog,
-        child: const Icon(Icons.add),
+      appBar: AppBar(title: const Text("Pocket Buddy")),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.primary,
+        padding: EdgeInsets.only(top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(0, Icons.home, 'Home'),
+            _buildNavItem(1, Icons.group, 'Room'),
+            _buildNavItem(2, Icons.analytics, 'Activity'),
+            _buildNavItem(3, Icons.settings, 'Setting'),
+          ],
+        ),
       ),
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            )
+          : isPersonalExpenseScreen
+              ? PersonalExpenseWidget(
+                  hasExpenseData: hasExpenseData,
+                  expenseData: expenseData,
+                )
+              : RoomDetailsWidget(),
+      drawer: const Drawer(),
+      drawerEnableOpenDragGesture: true,
     );
   }
 
-  void _showAddExpenseDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AddExpenseDialog(),
-    );
-  }
-}
-
-class AddExpenseDialog extends StatefulWidget {
-  const AddExpenseDialog({super.key});
-
-  @override
-  _AddExpenseDialogState createState() => _AddExpenseDialogState();
-}
-
-class _AddExpenseDialogState extends State<AddExpenseDialog> {
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Add Expense"),
-      content: SingleChildScrollView(
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    bool isActive = index == selectedNavIndex;
+    return GestureDetector(
+      onTap: () {
+        print("$label Button Pressed!");
+        setState(() {
+          isPersonalExpenseScreen = index == 1 ? false : true;
+          selectedNavIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: Duration(microseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+            color: isActive
+                ? Theme.of(context).colorScheme.onSurface
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(25)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 300,
-              child: TextField(
-                controller: _descriptionController,
-                decoration:
-                    const InputDecoration(labelText: "Expense Description"),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: 300,
-              child: TextField(
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Enter Amount"),
+            Icon(icon, size: 28, color: Theme.of(context).colorScheme.surface),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive
+                    ? Theme.of(context).colorScheme.surface
+                    : Colors.white,
               ),
             ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _addExpense,
-          child: const Text("Add"),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-      ],
     );
   }
 
-  void _addExpense() {
-    String description = _descriptionController.text.trim();
-    String amount = _amountController.text.trim();
+  Future<void> _loadPersonalExpenseData() async {
+    try {
+      http.Response? expenseResponse =
+          await homepageservices.fetchUserPersonalExpense();
 
-    if (description.isNotEmpty && amount.isNotEmpty) {
-      Homepageservices().addExpense("home_screen", description, amount);
-      Navigator.pop(context);
+      if (expenseResponse != null && expenseResponse.statusCode == 200) {
+        setState(() {
+          hasExpenseData = expenseResponse.body.isNotEmpty;
+          expenseData = expenseResponse.body;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          hasExpenseData = false;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching expenses: $e");
+      setState(() {
+        hasExpenseData = false;
+        isLoading = false;
+      });
     }
-  }
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _amountController.dispose();
-    super.dispose();
   }
 }

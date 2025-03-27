@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_theme/json_theme.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:procketbuddy_native/screens/Home_Screen.dart';
 import 'package:procketbuddy_native/screens/Login_Screen.dart';
 
@@ -18,7 +18,7 @@ void main() async {
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-final LocalStorage storage = LocalStorage('pocket_buddy@_app');
+final FlutterSecureStorage storage = FlutterSecureStorage();
 
 class MyApp extends StatelessWidget {
   final ThemeData lightThemeData;
@@ -46,8 +46,7 @@ class MyApp extends StatelessWidget {
   }
 
   Future<bool> _havingAuthenticationToken() async {
-    await storage.ready;
-    String? token = storage.getItem("user_auth_token");
+    String? token = await storage.read(key: '"user_auth_token"');
     return token != null && token.isNotEmpty;
   }
 }

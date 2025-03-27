@@ -9,6 +9,8 @@ class UserDetails {
   final String email;
   final String mobileNumber;
 
+  static UserDetails? saveUserDetailsInStorage; // ✅ Remove 'late'
+
   UserDetails({
     required this.userId,
     required this.userFirstName,
@@ -18,6 +20,7 @@ class UserDetails {
     required this.mobileNumber,
   });
 
+  // Convert UserDetails object to JSON
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
@@ -29,6 +32,7 @@ class UserDetails {
     };
   }
 
+  // Convert JSON to UserDetails object
   factory UserDetails.fromJson(Map<String, dynamic> json) {
     return UserDetails(
       userId: json['userId'] ?? '',
@@ -40,9 +44,9 @@ class UserDetails {
     );
   }
 
+  // Fetch user details from local storage
   static Future<UserDetails?> fetchUserDetails() async {
-    await storage.ready;
-    String? jsonResponse = storage.getItem("pocket_buddy_user_details");
+    String? jsonResponse = await storage.read(key: "pocket_buddy_user_details");
 
     if (jsonResponse == null) return null;
 
@@ -55,10 +59,15 @@ class UserDetails {
     }
   }
 
+  // Save user details to local storage
   static Future<void> saveUserDetails(Map<String, String> userData) async {
-    await storage.ready;
     try {
-      storage.setItem("pocket_buddy_user_details", userData);
+      print("User Details Map to save: $userData");
+      storage.write(
+          key: "pocket_buddy_user_details", value: jsonEncode(userData));
+
+      // Fetch & Store in Static Variable for Future Use
+      saveUserDetailsInStorage = await fetchUserDetails();
     } catch (error) {
       print("Error saving user details: $error");
     }
