@@ -1,23 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:procketbuddy_native/constants/Url_Constants.dart';
-import 'package:procketbuddy_native/main.dart';
-import 'package:procketbuddy_native/screens/Error_Screen.dart';
 import 'package:procketbuddy_native/services/Auth_Services.dart';
+import 'package:procketbuddy_native/utils/user_deatils.dart';
 
 class Homepageservices {
-  loadHomeScreen() {}
+  _loadHomeScreen() {}
 
   addExpense(String screen, String decs, String amount) {
     print("Hit from the $screen");
   }
 
-  void fetchUserPersonalExpense() async {
+  Future<http.Response?> fetchUserPersonalExpense() async {
     try {
       String? token = await AuthServices.fetchAuthToken();
-
+      String userId = UserDetails.saveUserDetailsInStorage!.userId;
+      print("________________________");
+      print("Current user Id: $userId");
+      print("________________________");
       Uri uri = Uri.parse(
-          "${UrlConstants.backendUrlV1}/personal/fetchAll?userId=67dbee7cb848635421854c86");
+          "${UrlConstants.backendUrlV1}/personal/fetchAll?userId=$userId");
       http.Response response = await http.get(
         uri,
         headers: {
@@ -25,14 +26,12 @@ class Homepageservices {
           'Content-Type': 'application/json'
         },
       );
-
       if (response.statusCode == 200) {
-        print("Response: ${response.body}");
-      } else {
-        print("Response Else ${response.statusCode}: ${response.body}");
+        return response;
       }
     } catch (error) {
       print("error: $error");
     }
+    return null;
   }
 }

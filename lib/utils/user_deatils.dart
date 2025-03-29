@@ -9,6 +9,8 @@ class UserDetails {
   final String email;
   final String mobileNumber;
 
+  static UserDetails? saveUserDetailsInStorage;
+
   UserDetails({
     required this.userId,
     required this.userFirstName,
@@ -31,18 +33,17 @@ class UserDetails {
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
     return UserDetails(
-      userId: json['userId'] ?? '',
-      userFirstName: json['userFirstName'] ?? '',
-      userLastName: json['userLastName'] ?? '',
-      username: json['username'] ?? '',
-      email: json['email'] ?? '',
-      mobileNumber: json['mobileNumber'] ?? '',
+      userId: json['userId']?.toString() ?? '',
+      userFirstName: json['userFirstName']?.toString() ?? '',
+      userLastName: json['userLastName']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      mobileNumber: json['mobileNumber']?.toString() ?? '',
     );
   }
 
   static Future<UserDetails?> fetchUserDetails() async {
-    await storage.ready;
-    String? jsonResponse = storage.getItem("pocket_buddy_user_details");
+    String? jsonResponse = await storage.read(key: "pocket_buddy_user_details");
 
     if (jsonResponse == null) return null;
 
@@ -55,10 +56,14 @@ class UserDetails {
     }
   }
 
-  static Future<void> saveUserDetails(Map<String, String> userData) async {
-    await storage.ready;
+  static Future<void> saveUserDetails(Map<String, dynamic> userData) async {
     try {
-      storage.setItem("pocket_buddy_user_details", userData);
+      UserDetails user = UserDetails.fromJson(userData);
+      await storage.write(
+          key: 'pocket_buddy_user_details', value: jsonEncode(user.toJson()));
+
+      saveUserDetailsInStorage = await fetchUserDetails();
+      print("\n---------\n User Details Saved Successfully \n---------");
     } catch (error) {
       print("Error saving user details: $error");
     }

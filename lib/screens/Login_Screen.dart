@@ -205,6 +205,43 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
+              SizedBox(height: 24),
+              Center(
+                child: Text("OR"),
+              ),
+              SizedBox(height: 24),
+              InkWell(
+                onTap: () {
+                  print("Login With Google Clicked!");
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/images/google_logo.png",
+                        height: 24,
+                        width: 24,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        "Login With Google",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),
