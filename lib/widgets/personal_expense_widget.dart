@@ -3,7 +3,7 @@ import 'package:procketbuddy_native/utils/personal_expense_details.dart';
 
 class PersonalExpenseWidget extends StatefulWidget {
   final bool hasExpenseData;
-  final dynamic expenseData; // Expecting expense data from API
+  final dynamic expenseData;
 
   const PersonalExpenseWidget({
     super.key,
@@ -16,6 +16,10 @@ class PersonalExpenseWidget extends StatefulWidget {
 }
 
 class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
+  final _addExpenseFormKey = GlobalKey<FormState>();
+  final _descriptionController = TextEditingController();
+  final _amountController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -104,22 +108,139 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
   }
 
   Widget _buildNoExpenseSummary() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            "No Expense Found!",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Stack(
+      children: [
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "No Expense Found!",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "Please add some expenses.",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
           ),
-          SizedBox(height: 4),
-          Text(
-            "Please add some expenses.",
-            style: TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-          SizedBox(height: 16),
-        ],
-      ),
+        ),
+        Positioned(
+          bottom: 20,
+          right: 20,
+          child: _buildAddExpenseButton(),
+        ),
+      ],
     );
+  }
+
+  Widget _buildAddExpenseButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        _showAddExpenseSheetUI(context);
+      },
+      child: Icon(Icons.add),
+    );
+  }
+
+  _showAddExpenseSheetUI(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondaryFixedDim,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: Icon(Icons.cancel),
+                      ),
+                      Text(
+                        "Add Expense",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 18,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _registerExpense,
+                        child: Text("Save"),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 64),
+                  Form(
+                    key: _addExpenseFormKey,
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextFormField(
+                            controller: _descriptionController,
+                            validator: (value) {
+                              if (value == null) {
+                                return "Please enter a description";
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.description),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              labelText: 'Enter a description',
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          TextFormField(
+                            controller: _amountController,
+                            validator: (value) {
+                              if (value == null) {
+                                return "Please enter amount";
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.currency_bitcoin),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              labelText: '0.00',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  _registerExpense() {
+    _addExpenseFormKey.currentState!.validate();
+
+    String expenseDesc = _descriptionController.text;
+    num expenseAmount = num.parse(_amountController.text);
+
+    
+
   }
 }

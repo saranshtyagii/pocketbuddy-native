@@ -9,7 +9,7 @@ class UserDetails {
   final String email;
   final String mobileNumber;
 
-  static UserDetails? saveUserDetailsInStorage; // ✅ Remove 'late'
+  static UserDetails? saveUserDetailsInStorage;
 
   UserDetails({
     required this.userId,
@@ -20,7 +20,6 @@ class UserDetails {
     required this.mobileNumber,
   });
 
-  // Convert UserDetails object to JSON
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
@@ -32,19 +31,17 @@ class UserDetails {
     };
   }
 
-  // Convert JSON to UserDetails object
   factory UserDetails.fromJson(Map<String, dynamic> json) {
     return UserDetails(
-      userId: json['userId'] ?? '',
-      userFirstName: json['userFirstName'] ?? '',
-      userLastName: json['userLastName'] ?? '',
-      username: json['username'] ?? '',
-      email: json['email'] ?? '',
-      mobileNumber: json['mobileNumber'] ?? '',
+      userId: json['userId']?.toString() ?? '',
+      userFirstName: json['userFirstName']?.toString() ?? '',
+      userLastName: json['userLastName']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      mobileNumber: json['mobileNumber']?.toString() ?? '',
     );
   }
 
-  // Fetch user details from local storage
   static Future<UserDetails?> fetchUserDetails() async {
     String? jsonResponse = await storage.read(key: "pocket_buddy_user_details");
 
@@ -59,15 +56,14 @@ class UserDetails {
     }
   }
 
-  // Save user details to local storage
-  static Future<void> saveUserDetails(Map<String, String> userData) async {
+  static Future<void> saveUserDetails(Map<String, dynamic> userData) async {
     try {
-      print("User Details Map to save: $userData");
-      storage.write(
-          key: "pocket_buddy_user_details", value: jsonEncode(userData));
+      UserDetails user = UserDetails.fromJson(userData);
+      await storage.write(
+          key: 'pocket_buddy_user_details', value: jsonEncode(user.toJson()));
 
-      // Fetch & Store in Static Variable for Future Use
       saveUserDetailsInStorage = await fetchUserDetails();
+      print("\n---------\n User Details Saved Successfully \n---------");
     } catch (error) {
       print("Error saving user details: $error");
     }

@@ -80,7 +80,7 @@ class AuthServices {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, String> userData = jsonDecode(response.body);
+        final Map<String, dynamic> userData = jsonDecode(response.body);
         UserDetails.saveUserDetails(userData);
       } else {
         _showErrorScreen();
